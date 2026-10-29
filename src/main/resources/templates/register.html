@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Retail | Register</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 25px 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f0eaff, #e4f5e8, #f8f5ff);
+            color: #343047;
+        }
+        .card {
+            width: 90%;
+            max-width: 440px;
+            background: white;
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 12px 35px #594a771c;
+        }
+        h1 { text-align: center; color: #65519b; margin-bottom: 8px; }
+        .subtitle { text-align: center; color: #777; margin-bottom: 22px; }
+        label { display: block; margin: 13px 0 6px; font-weight: bold; }
+        input {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #d8d0e9;
+            border-radius: 9px;
+            font-size: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 22px;
+            border: 0;
+            border-radius: 9px;
+            background: #719b79;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { background: #587e60; }
+        .message { padding: 10px; border-radius: 8px; text-align: center; }
+        .error { background: #ffe8e8; color: #a52626; }
+        .link { text-align: center; margin-top: 20px; }
+        a { color: #65519b; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Create Account</h1>
+    <p class="subtitle">Join Smart Retail Management System</p>
+
+    <p class="message error" th:if="${error}" th:text="${error}"></p>
+
+    <form th:action="@{/register}" method="post">
+        <label for="fullName">Full Name</label>
+        <input id="fullName" name="fullName" type="text"
+               placeholder="Enter your full name" required>
+
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text"
+               placeholder="Create a username" required minlength="3">
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email"
+               placeholder="Enter your email" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password"
+               placeholder="Minimum 8 characters" required minlength="8">
+
+        <label for="confirmPassword">Confirm Password</label>
+        <input id="confirmPassword" name="confirmPassword" type="password"
+               placeholder="Re-enter password" required minlength="8">
+
+        <button type="submit">Register</button>
+    </form>
+
+    <p class="link">Already registered? <a th:href="@{/login}">Sign in</a></p>
+</div>
+</body>
+</html>

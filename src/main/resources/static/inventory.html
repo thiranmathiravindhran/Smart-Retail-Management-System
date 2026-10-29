@@ -1,0 +1,645 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Retail - Inventory</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f3e8ff, #f0fdf4);
+            color: #263238;
+            min-height: 100vh;
+            padding: 25px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            color: #166534;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #64748b;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button, .nav-button {
+            border: none;
+            border-radius: 8px;
+            padding: 11px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .primary {
+            background: #15803d;
+            color: white;
+        }
+
+        .primary:hover {
+            background: #166534;
+        }
+
+        .secondary {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .secondary:hover {
+            background: #6d28d9;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 22px;
+            border-radius: 14px;
+            box-shadow: 0 5px 18px #0000000d;
+            border-left: 5px solid #16a34a;
+        }
+
+        .stat-card:nth-child(2) {
+            border-left-color: #8b5cf6;
+        }
+
+        .stat-card:nth-child(3) {
+            border-left-color: #0d9488;
+        }
+
+        .stat-card:nth-child(4) {
+            border-left-color: #ea580c;
+        }
+
+        .stat-card p {
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .stat-card h2 {
+            font-size: 29px;
+            color: #166534;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: 0 5px 18px #0000000d;
+            margin-bottom: 25px;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .panel-heading h2 {
+            color: #166534;
+        }
+
+        input {
+            padding: 11px 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            width: 250px;
+            max-width: 100%;
+        }
+
+        input:focus {
+            border-color: #16a34a;
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f3e8ff;
+            color: #5b21b6;
+        }
+
+        tbody tr:hover {
+            background: #f0fdf4;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .available {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .low {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .error {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .loading {
+            color: #64748b;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Product details popup */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: #00000080;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 15px 45px #00000030;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .modal-header h2 {
+            color: #166534;
+        }
+
+        .close-button {
+            background: #fee2e2;
+            color: #991b1b;
+            font-size: 20px;
+            padding: 5px 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 13px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-row span:first-child {
+            color: #64748b;
+        }
+
+        .detail-row span:last-child {
+            font-weight: bold;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        .modal-footer {
+            margin-top: 22px;
+            text-align: right;
+        }
+
+        footer {
+            text-align: center;
+            color: #64748b;
+            padding: 15px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 14px;
+            }
+
+            .panel {
+                padding: 15px;
+            }
+
+            header {
+                align-items: flex-start;
+            }
+
+            input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <header>
+        <div>
+            <h1>Smart Retail Inventory</h1>
+            <p class="subtitle">Monitor stock levels and product details</p>
+        </div>
+
+        <div class="actions">
+            <button class="primary" onclick="loadInventory()">
+                Refresh
+            </button>
+
+            <a class="nav-button secondary" href="/reorders.html">
+                Open Reorder Management
+            </a>
+        </div>
+    </header>
+
+    <div id="message" class="message"></div>
+
+    <section class="stats">
+        <div class="stat-card">
+            <p>Total Products</p>
+            <h2 id="totalProducts">0</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>In Stock</p>
+            <h2 id="inStock">0</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Low Stock</p>
+            <h2 id="lowStock">0</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Total Stock Units</p>
+            <h2 id="totalUnits">0</h2>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-heading">
+            <h2>Inventory Products</h2>
+            <input
+                id="searchInput"
+                type="search"
+                placeholder="Search product..."
+                oninput="renderInventory()">
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="inventoryBody">
+                    <tr>
+                        <td colspan="7" class="loading">
+                            Loading inventory...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer>Smart Retail Management System</footer>
+</div>
+
+<!-- Product Details Modal -->
+<div id="productModal" class="modal"
+     onclick="closeModalOnBackground(event)">
+
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Product Details</h2>
+            <button class="close-button" onclick="closeProduct()">
+                &times;
+            </button>
+        </div>
+
+        <div class="detail-row">
+            <span>Product ID</span>
+            <span id="detailId">-</span>
+        </div>
+
+        <div class="detail-row">
+            <span>Product Name</span>
+            <span id="detailName">-</span>
+        </div>
+
+        <div class="detail-row">
+            <span>Category</span>
+            <span id="detailCategory">-</span>
+        </div>
+
+        <div class="detail-row">
+            <span>Price</span>
+            <span id="detailPrice">-</span>
+        </div>
+
+        <div class="detail-row">
+            <span>Stock Quantity</span>
+            <span id="detailStock">-</span>
+        </div>
+
+        <div class="detail-row">
+            <span>Stock Status</span>
+            <span id="detailStatus">-</span>
+        </div>
+
+        <div class="modal-footer">
+            <button class="primary" onclick="closeProduct()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let products = [];
+
+    // Safely read product values from the API response.
+    function getProductValue(product, ...keys) {
+        for (const key of keys) {
+            if (product[key] !== undefined && product[key] !== null) {
+                return product[key];
+            }
+        }
+        return "";
+    }
+
+    function getStock(product) {
+        const value = Number(
+            getProductValue(product, "stockQuantity", "stock_quantity")
+        );
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    function getName(product) {
+        return String(
+            getProductValue(product, "productName", "product_name", "name")
+            || "Unnamed Product"
+        );
+    }
+
+    function escapeHTML(value) {
+        return String(value).replace(/[&<>"']/g, function (character) {
+            const entities = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            };
+            return entities[character];
+        });
+    }
+
+    function showMessage(message, isError = true) {
+        const box = document.getElementById("message");
+        box.textContent = message;
+        box.className = isError ? "message error" : "message";
+    }
+
+    async function loadInventory() {
+        const body = document.getElementById("inventoryBody");
+
+        body.innerHTML =
+            '<tr><td colspan="7" class="loading">Loading inventory...</td></tr>';
+
+        showMessage("", false);
+
+        try {
+            const response = await fetch("/api/products", {
+                headers: { "Accept": "application/json" }
+            });
+
+            if (!response.ok) {
+                throw new Error("Products API returned HTTP " + response.status);
+            }
+
+            const data = await response.json();
+
+            if (!Array.isArray(data)) {
+                throw new Error("The products API did not return a product list.");
+            }
+
+            products = data;
+
+            updateStatistics();
+            renderInventory();
+
+        } catch (error) {
+            console.error("Inventory loading error:", error);
+
+            body.innerHTML =
+                '<tr><td colspan="7" class="loading">' +
+                'Unable to load inventory.</td></tr>';
+
+            showMessage(
+                "Inventory load aagala. Spring Boot running-ah irukka check pannu. " +
+                error.message
+            );
+        }
+    }
+
+    function updateStatistics() {
+        const total = products.length;
+
+        const low = products.filter(function (product) {
+            return getStock(product) <= 10;
+        }).length;
+
+        const units = products.reduce(function (sum, product) {
+            return sum + getStock(product);
+        }, 0);
+
+        document.getElementById("totalProducts").textContent = total;
+        document.getElementById("lowStock").textContent = low;
+        document.getElementById("inStock").textContent = total - low;
+        document.getElementById("totalUnits").textContent = units;
+    }
+
+    function renderInventory() {
+        const body = document.getElementById("inventoryBody");
+        const search = document.getElementById("searchInput")
+            .value.trim().toLowerCase();
+
+        const filtered = products.filter(function (product) {
+            const name = getName(product).toLowerCase();
+            const category = String(
+                getProductValue(product, "category")
+            ).toLowerCase();
+
+            return name.includes(search) || category.includes(search);
+        });
+
+        if (filtered.length === 0) {
+            body.innerHTML =
+                '<tr><td colspan="7" class="loading">' +
+                'No products found.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = filtered.map(function (product) {
+            const originalIndex = products.indexOf(product);
+            const id = getProductValue(product, "id");
+            const name = getName(product);
+            const category = getProductValue(product, "category") || "-";
+            const price = Number(getProductValue(product, "price") || 0);
+            const stock = getStock(product);
+            const isLow = stock <= 10;
+
+            return `
+                <tr>
+                    <td>${escapeHTML(id)}</td>
+                    <td>${escapeHTML(name)}</td>
+                    <td>${escapeHTML(category)}</td>
+                    <td>₹${Number.isFinite(price) ? price.toFixed(2) : "0.00"}</td>
+                    <td>${stock}</td>
+                    <td>
+                        <span class="status ${isLow ? "low" : "available"}">
+                            ${isLow ? "Low Stock" : "Available"}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="primary"
+                            onclick="viewProduct(${originalIndex})">
+                            View
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+    }
+
+    // View opens the product details popup; it does not navigate to another URL.
+    function viewProduct(index) {
+        const product = products[index];
+
+        if (!product) {
+            showMessage("Product details kidaikkala. Refresh panni try pannu.");
+            return;
+        }
+
+        const stock = getStock(product);
+        const price = Number(getProductValue(product, "price") || 0);
+
+        document.getElementById("detailId").textContent =
+            getProductValue(product, "id") || "-";
+
+        document.getElementById("detailName").textContent =
+            getName(product);
+
+        document.getElementById("detailCategory").textContent =
+            getProductValue(product, "category") || "-";
+
+        document.getElementById("detailPrice").textContent =
+            "₹" + (Number.isFinite(price) ? price.toFixed(2) : "0.00");
+
+        document.getElementById("detailStock").textContent = stock;
+
+        document.getElementById("detailStatus").textContent =
+            stock <= 10 ? "Low Stock" : "Available";
+
+        document.getElementById("productModal").style.display = "flex";
+    }
+
+    function closeProduct() {
+        document.getElementById("productModal").style.display = "none";
+    }
+
+    function closeModalOnBackground(event) {
+        if (event.target.id === "productModal") {
+            closeProduct();
+        }
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeProduct();
+        }
+    });
+
+    loadInventory();
+</script>
+</body>
+</html>

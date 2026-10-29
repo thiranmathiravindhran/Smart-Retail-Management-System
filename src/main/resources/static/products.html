@@ -1,0 +1,511 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Retail - Products</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+         :root {
+    --purple: #6550A5;
+    --dark-purple: #392663;
+    --lavender: #F0EAFF;
+    --light-purple: #E5DDFB;
+    --white: #FFFFFF;
+    --text: #302747;
+    --green: #32966B;
+    --border: #E9E3F2;
+}
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: var(--lavender);
+            color: var(--text);
+        }
+
+        /* LEFT SIDEBAR */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 245px;
+            height: 100vh;
+            background: var(--dark-purple);
+            color: var(--text);
+            padding: 25px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+        }
+
+        .brand {
+            font-size: 21px;
+            font-weight: bold;
+            line-height: 1.5;
+            padding: 0 10px 25px;
+            color: var(--dark-purple);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .menu-title {
+            color: #8B80A0;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin: 25px 10px 10px;
+            letter-spacing: 1px;
+        }
+
+        .sidebar a {
+            display: block;
+            text-decoration: none;
+            color: #594F6E;
+            padding: 13px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background: #F3EDFF;
+            color: var(--dark-purple);
+        }
+
+        .sidebar a.active {
+            background: var(--purple);
+            color: var(--white);
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            margin-left: 245px;
+            padding: 30px;
+            max-width: 1600px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            color: var(--dark-purple);
+            font-size: 28px;
+        }
+
+        .topbar p {
+            color: #817691;
+            margin-bottom: 0;
+        }
+
+        .admin {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 12px 18px;
+            box-shadow: 0 3px 12px #EDE7F5;
+        }
+
+        /* WHITE CARDS */
+        .card {
+            background: var(--white);
+            padding: 24px;
+            margin-bottom: 24px;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 16px #EDE7F5;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--dark-purple);
+            font-size: 21px;
+        }
+
+        .description {
+            color: #817691;
+            font-size: 14px;
+            margin-top: -5px;
+        }
+
+        /* PRODUCT FORM */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 7px;
+            color: #51436D;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #D9D0E9;
+            border-radius: 8px;
+            outline: none;
+            background: #FFFFFF;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px #EEE7FF;
+        }
+
+        /* BUTTONS */
+        button {
+            display: inline-block;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            background: var(--purple);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 16px;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: var(--dark-purple);
+        }
+
+        .refresh {
+    background: var(--purple);
+    color: white;
+    margin: 0 0 10px;
+}
+
+.refresh:hover {
+    background: var(--dark-purple);
+}
+        /* PRODUCT TABLE */
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 580px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 14px;
+            border-bottom: 1px solid #EEE8F7;
+        }
+
+        th {
+            background: var(--light-purple);
+            color: var(--dark-purple);
+            font-size: 13px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background: #FAF8FF;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .page-footer {
+            text-align: center;
+            color: #817691;
+            font-size: 12px;
+            padding: 10px;
+        }
+
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 800px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                padding: 16px;
+            }
+
+            .brand {
+                padding-bottom: 12px;
+            }
+
+            .sidebar nav {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 4px;
+            }
+
+            .menu-title {
+                margin-top: 15px;
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 18px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar h1 {
+                font-size: 23px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+    <div class="brand">💜 Smart Retail<br>Management System</div>
+
+    <div class="menu-title">Main Menu</div>
+    <nav>
+    <a href="/dashboard.html">▦ Dashboard</a>
+    <a href="/products.html" class="active">▤ Products</a>
+    <a href="/sales.html">▥ Sales</a>
+    <a href="/forecast.html">↗ Forecast</a>
+    <a href="/inventory.html">▣ Inventory</a>
+    <a href="/reorders.html">⟳ Reorders</a>
+    <a href="/reports.html">▥ Reports</a>
+</nav>
+
+    <div class="menu-title">Preferences</div>
+    <nav>
+        <a href="settings.html">⚙ Settings</a>
+        <a href="login.html">⇥ Login / Logout</a>
+    </nav>
+</aside>
+
+<main class="main">
+
+    <header class="topbar">
+        <div>
+            <h1>Product Management</h1>
+            <p>Manage your retail products and stock details</p>
+        </div>
+        <div class="admin">👤 Admin</div>
+    </header>
+
+    <section class="card">
+        <h2>＋ Add New Product</h2>
+        <p class="description">Enter the product information below.</p>
+
+        <form id="productForm">
+            <div class="form-grid">
+                <div>
+                    <label for="productName">Product Name</label>
+                    <input id="productName"
+                           placeholder="e.g. Notebook" required>
+                </div>
+
+                <div>
+                    <label for="category">Category</label>
+                    <input id="category"
+                           placeholder="e.g. Stationery" required>
+                </div>
+
+                <div>
+                    <label for="price">Price (₹)</label>
+                    <input id="price" type="number"
+                           min="0" step="0.01"
+                           placeholder="Enter price" required>
+                </div>
+
+                <div>
+                    <label for="stockQuantity">Stock Quantity</label>
+                    <input id="stockQuantity" type="number"
+                           min="0" step="1"
+                           placeholder="Enter stock quantity" required>
+                </div>
+            </div>
+
+            <button type="submit">Save Product</button>
+        </form>
+
+        <p id="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card">
+        <h2>▤ Product Inventory</h2>
+        <p class="description">
+            All products currently stored in your database.
+        </p>
+
+        <button type="button" class="refresh" id="refreshButton">
+            ↻ Refresh Products
+        </button>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Price (₹)</th>
+                        <th>Stock Quantity</th>
+                    </tr>
+                </thead>
+
+                <tbody id="productTable">
+                    <tr>
+                        <td colspan="5">Loading products...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="page-footer">
+        Smart Retail Management System · Product Management
+    </div>
+
+</main>
+
+<script>
+    const API_URL = "/api/products";
+
+    async function loadProducts() {
+        const table = document.getElementById("productTable");
+
+        table.innerHTML =
+            "<tr><td colspan='5'>Loading products...</td></tr>";
+
+        try {
+            const response = await fetch(API_URL);
+
+            if (!response.ok) {
+                throw new Error("Could not load products");
+            }
+
+            const products = await response.json();
+            table.innerHTML = "";
+
+            if (!Array.isArray(products) || products.length === 0) {
+                table.innerHTML =
+                    "<tr><td colspan='5'>No products found.</td></tr>";
+                return;
+            }
+
+            products.forEach(product => {
+                const row = document.createElement("tr");
+
+                [
+                    product.id,
+                    product.productName,
+                    product.category,
+                    Number(product.price).toFixed(2),
+                    product.stockQuantity
+                ].forEach(value => {
+                    const cell = document.createElement("td");
+                    cell.textContent = value ?? "";
+                    row.appendChild(cell);
+                });
+
+                table.appendChild(row);
+            });
+
+        } catch (error) {
+            table.innerHTML =
+                "<tr><td colspan='5'>Unable to load products. Check Spring Boot.</td></tr>";
+        }
+    }
+
+    document.getElementById("refreshButton").addEventListener(
+        "click",
+        loadProducts
+    );
+
+    document.getElementById("productForm").addEventListener(
+        "submit",
+        async function(event) {
+            event.preventDefault();
+
+            const message = document.getElementById("message");
+            message.textContent = "";
+
+            const product = {
+                productName: document.getElementById("productName").value.trim(),
+                category: document.getElementById("category").value.trim(),
+                price: Number(document.getElementById("price").value),
+                stockQuantity: Number(
+                    document.getElementById("stockQuantity").value
+                )
+            };
+
+            if (
+                !product.productName ||
+                !product.category ||
+                !Number.isFinite(product.price) ||
+                product.price < 0 ||
+                !Number.isInteger(product.stockQuantity) ||
+                product.stockQuantity < 0
+            ) {
+                message.textContent =
+                    "Please enter valid product details.";
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(product)
+                });
+
+                if (!response.ok) {
+                    throw new Error("Save failed");
+                }
+
+                message.textContent =
+                    "✓ Product saved successfully!";
+
+                this.reset();
+                await loadProducts();
+
+            } catch (error) {
+                message.textContent =
+                    "Could not save product. Check the Spring Boot terminal.";
+            }
+        }
+    );
+
+    loadProducts();
+</script>
+
+</body>
+</html>

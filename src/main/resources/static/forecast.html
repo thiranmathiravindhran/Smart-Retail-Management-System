@@ -1,0 +1,438 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demand Forecast - Smart Retail</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        :root {
+            --purple: #6550A5;
+            --dark: #392663;
+            --lavender: #F0EAFF;
+            --light: #F8F6FF;
+            --text: #39334B;
+            --muted: #817A94;
+            --border: #E5DDF5;
+            --green: #26845B;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: var(--light);
+            color: var(--text);
+        }
+
+        .layout { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 235px;
+            flex-shrink: 0;
+            background: var(--dark);
+            padding: 25px 15px;
+        }
+
+        .brand {
+            color: white;
+            font-size: 21px;
+            font-weight: bold;
+            line-height: 1.5;
+            padding: 0 10px 25px;
+        }
+
+        .brand span { color: #D6C8FF; }
+
+        .sidebar a {
+            display: block;
+            color: #E7DFF8;
+            text-decoration: none;
+            padding: 13px;
+            margin: 5px 0;
+            border-radius: 8px;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: var(--purple);
+            color: white;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+            padding: 30px;
+        }
+
+        h1 { color: var(--dark); margin: 0 0 8px; }
+        h2 { color: var(--dark); font-size: 19px; margin-top: 0; }
+
+        .subtitle {
+            color: var(--muted);
+            margin: 0 0 25px;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 22px;
+            box-shadow: 0 5px 16px #39266308;
+            min-width: 0;
+        }
+
+        .stat-label { color: var(--muted); font-size: 14px; }
+        .stat-number {
+            font-size: 29px;
+            font-weight: bold;
+            color: var(--purple);
+            margin-top: 13px;
+            overflow-wrap: anywhere;
+        }
+
+        .note {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .chart-container {
+            height: 350px;
+            position: relative;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 22px;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 11px 17px;
+            background: var(--purple);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled { opacity: .6; cursor: wait; }
+
+        .message {
+            margin: 12px 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        th, td {
+            padding: 13px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        th { background: var(--lavender); color: var(--dark); }
+
+        @media (max-width: 950px) {
+            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .chart-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 650px) {
+            .layout { display: block; }
+            .sidebar { width: 100%; }
+            .nav { display: flex; flex-wrap: wrap; }
+            .sidebar a { padding: 9px; }
+            .main { padding: 18px 12px; }
+            .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .card { padding: 15px; }
+            .stat-number { font-size: 23px; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">Smart Retail<br><span>Management System</span></div>
+        <nav class="nav">
+            <a href="/dashboard.html">Dashboard</a>
+            <a href="/products.html">Products</a>
+            <a href="/sales.html">Sales</a>
+            <a class="active" href="/forecast.html">Demand Forecast</a>
+            <a href="/inventory.html">Inventory</a>
+            <a href="/reports.html">Reports</a>
+            <a href="/reorders.html">Reorder System</a>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <h1>Demand Forecasting</h1>
+        <p class="subtitle">
+            Analyze recorded sales and estimate demand from available sales data.
+        </p>
+
+        <section class="stats">
+            <div class="card">
+                <div class="stat-label">Total Products</div>
+                <div class="stat-number" id="totalProducts">—</div>
+                <div class="note">Products registered in the database</div>
+            </div>
+            <div class="card">
+                <div class="stat-label">Total Units Sold</div>
+                <div class="stat-number" id="totalSold">—</div>
+                <div class="note">Sum of recorded sales quantities</div>
+            </div>
+            <div class="card">
+                <div class="stat-label">Average Units per Sales Record</div>
+                <div class="stat-number" id="predictedDemand">—</div>
+                <div class="note">A simple average, not an ML forecast</div>
+            </div>
+        </section>
+
+        <section class="chart-grid">
+            <div class="card">
+                <h2>Sales by Product</h2>
+                <p class="subtitle">Total recorded units sold for each product.</p>
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Sales Records vs Average</h2>
+                <p class="subtitle">Recorded quantity for each sales entry.</p>
+                <div class="chart-container">
+                    <canvas id="recordsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Product Demand Summary</h2>
+            <p class="subtitle">Current stock and recorded sales, grouped by product.</p>
+            <div id="message" class="message">Loading forecast data...</div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Current Stock</th>
+                        <th>Total Units Sold</th>
+                        <th>Average per Sales Record</th>
+                    </tr>
+                    </thead>
+                    <tbody id="summaryRows">
+                    <tr><td colspan="4">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p><button id="refreshButton" type="button">↻ Refresh Forecast</button></p>
+        </section>
+    </main>
+</div>
+
+<script>
+    let salesChart = null;
+    let recordsChart = null;
+
+    function field(obj, ...keys) {
+        for (const key of keys) {
+            if (obj && obj[key] !== undefined && obj[key] !== null) {
+                return obj[key];
+            }
+        }
+        return null;
+    }
+
+    function productName(p) {
+        return field(p, "productName", "product_name", "name") || "Unnamed Product";
+    }
+
+    function productStock(p) {
+        return Number(field(p, "stockQuantity", "stock_quantity", "stock") ?? 0);
+    }
+
+    function saleQuantity(s) {
+        return Number(field(s, "quantitySold", "quantity_sold", "quantity") ?? 0);
+    }
+
+    function saleProductId(s) {
+        const nested = s.product;
+        return field(s, "productId", "product_id") ??
+               (nested ? nested.id : null);
+    }
+
+    function chartOrMessage(canvasId, message) {
+        const canvas = document.getElementById(canvasId);
+        if (typeof Chart === "undefined") {
+            message.textContent =
+                "Chart.js could not load. Check your internet connection.";
+            return false;
+        }
+        return !!canvas;
+    }
+
+    async function loadForecast() {
+        const button = document.getElementById("refreshButton");
+        const message = document.getElementById("message");
+        button.disabled = true;
+        message.textContent = "Loading sales and product data...";
+
+        try {
+            const [productResponse, salesResponse] = await Promise.all([
+                fetch("/api/products"),
+                fetch("/api/sales")
+            ]);
+
+            if (!productResponse.ok) {
+                throw new Error("Products API returned HTTP " + productResponse.status);
+            }
+            if (!salesResponse.ok) {
+                throw new Error("Sales API returned HTTP " + salesResponse.status);
+            }
+
+            const productResult = await productResponse.json();
+            const salesResult = await salesResponse.json();
+
+            const products = Array.isArray(productResult)
+                ? productResult
+                : (productResult.products || productResult.data || productResult.content || []);
+
+            const sales = Array.isArray(salesResult)
+                ? salesResult
+                : (salesResult.sales || salesResult.data || salesResult.content || []);
+
+            if (!Array.isArray(products) || !Array.isArray(sales)) {
+                throw new Error("Unexpected API response format.");
+            }
+
+            const soldByProduct = {};
+            const recordCountByProduct = {};
+            let totalSold = 0;
+
+            sales.forEach(sale => {
+                const id = saleProductId(sale);
+                const qty = saleQuantity(sale);
+
+                totalSold += qty;
+
+                if (id !== null && id !== undefined) {
+                    soldByProduct[id] = (soldByProduct[id] || 0) + qty;
+                    recordCountByProduct[id] = (recordCountByProduct[id] || 0) + 1;
+                }
+            });
+
+            const average = sales.length ? totalSold / sales.length : 0;
+
+            document.getElementById("totalProducts").textContent = products.length;
+            document.getElementById("totalSold").textContent = totalSold.toLocaleString("en-IN");
+            document.getElementById("predictedDemand").textContent =
+                sales.length ? average.toFixed(1) + " units" : "No sales yet";
+
+            const rows = document.getElementById("summaryRows");
+            rows.replaceChildren();
+
+            products.forEach(p => {
+                const id = p.id;
+                const sold = soldByProduct[id] || 0;
+                const count = recordCountByProduct[id] || 0;
+                const tr = rows.insertRow();
+
+                [
+                    productName(p),
+                    productStock(p),
+                    sold,
+                    count ? (sold / count).toFixed(1) : "No sales"
+                ].forEach(value => {
+                    const td = tr.insertCell();
+                    td.textContent = value;
+                });
+            });
+
+            if (salesChart) salesChart.destroy();
+            if (recordsChart) recordsChart.destroy();
+
+            if (!chartOrMessage("salesChart", message)) return;
+
+            salesChart = new Chart(document.getElementById("salesChart"), {
+                type: "bar",
+                data: {
+                    labels: products.map(productName),
+                    datasets: [{
+                        label: "Units Sold",
+                        data: products.map(p => soldByProduct[p.id] || 0),
+                        backgroundColor: "#6550A5",
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            recordsChart = new Chart(document.getElementById("recordsChart"), {
+                type: "line",
+                data: {
+                    labels: sales.map((sale, i) =>
+                        "Record " + (i + 1)
+                    ),
+                    datasets: [{
+                        label: "Units in sales record",
+                        data: sales.map(saleQuantity),
+                        borderColor: "#6550A5",
+                        backgroundColor: "#B9A8EE",
+                        tension: 0.25,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            message.textContent = sales.length
+                ? "Loaded " + products.length + " products and " + sales.length +
+                  " sales records. The average shown is descriptive, not a future-demand prediction."
+                : "Products loaded. No sales records are available yet, so demand cannot be estimated from sales history.";
+
+        } catch (error) {
+            console.error("Forecast loading error:", error);
+            message.textContent = "Forecast data failed to load: " + error.message;
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    document.getElementById("refreshButton").addEventListener("click", loadForecast);
+    loadForecast();
+</script>
+</body>
+</html>

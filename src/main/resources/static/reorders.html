@@ -1,0 +1,534 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Retail - Reorder System</title>
+
+    <style>
+        :root {
+            --purple: #8064a2;
+            --lavender: #eee8f7;
+            --green: #dcefe3;
+            --text: #373344;
+            --white: #ffffff;
+            --border: #e2dce9;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f0fb, #e5f0e9);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        header {
+            background: var(--white);
+            padding: 24px;
+            border-radius: 16px;
+            border-left: 6px solid var(--purple);
+            margin-bottom: 22px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            color: #624987;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 22px;
+            margin-bottom: 22px;
+            border-radius: 16px;
+            box-shadow: 0 5px 18px #55447712;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 14px;
+            align-items: end;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+        }
+
+        button {
+            border: 0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            background: var(--purple);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            opacity: 0.88;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .receive {
+            background: #28784d;
+        }
+
+        .message {
+            margin-top: 14px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .error {
+            color: #b42318;
+        }
+
+        .success {
+            color: #237344;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th, td {
+            padding: 13px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        th {
+            background: var(--lavender);
+            color: #624987;
+        }
+
+        .pending {
+            color: #9a6700;
+            font-weight: bold;
+        }
+
+        .received {
+            color: #237344;
+            font-weight: bold;
+        }
+
+        .completed {
+            color: #625b70;
+            font-weight: bold;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 18px;
+            color: #624987;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 12px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header, .card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <a class="back" href="/inventory.html">← Back to Stock Analysis</a>
+
+    <header>
+        <h1>Reorder Management</h1>
+        <p>Create reorder requests and update stock when goods arrive.</p>
+    </header>
+
+    <section class="card">
+        <h2>Create Reorder Request</h2>
+
+        <form id="reorderForm">
+            <div class="form-grid">
+                <div>
+                    <label for="product">Select Product</label>
+                    <select id="product" required>
+                        <option value="">Loading products...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="quantity">Order Quantity</label>
+                    <input id="quantity" type="number"
+                           min="1" step="1" value="20" required>
+                </div>
+
+                <div>
+                    <button id="createButton" type="submit">
+                        Create Request
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div id="message" class="message" role="status"
+             aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+        <h2>Reorder Requests</h2>
+
+        <button id="refreshButton" type="button">
+            ↻ Refresh Requests
+        </button>
+
+        <div class="table-wrap" style="margin-top: 16px;">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Requested At</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="requestRows">
+                <tr>
+                    <td colspan="6">Loading requests...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    const productSelect = document.getElementById("product");
+    const reorderForm = document.getElementById("reorderForm");
+    const quantityInput = document.getElementById("quantity");
+    const messageBox = document.getElementById("message");
+    const requestRows = document.getElementById("requestRows");
+    const createButton = document.getElementById("createButton");
+    const refreshButton = document.getElementById("refreshButton");
+
+    function showMessage(message, isError = false) {
+        messageBox.textContent = message;
+        messageBox.className = "message " +
+            (isError ? "error" : "success");
+    }
+
+    async function readResponse(response) {
+        const text = await response.text();
+
+        if (!text) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch {
+            return { message: text };
+        }
+    }
+
+    function getProductName(product) {
+        return product.productName || product.product_name || "";
+    }
+
+    function getProductStock(product) {
+        return product.stockQuantity ??
+            product.stock_quantity ??
+            product.stock ??
+            0;
+    }
+
+    async function loadProducts() {
+        try {
+            const response = await fetch("/api/products");
+            const data = await readResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message || "Products API error: " + response.status
+                );
+            }
+
+            const products = Array.isArray(data)
+                ? data
+                : (data.products || data.data || data.content || []);
+
+            productSelect.replaceChildren();
+
+            productSelect.add(new Option("Choose a product", ""));
+
+            products.forEach(product => {
+                const name = getProductName(product);
+
+                if (product.id == null || !name) {
+                    return;
+                }
+
+                const option = new Option(
+                    `${name} — Current stock: ${getProductStock(product)}`,
+                    String(product.id)
+                );
+
+                productSelect.add(option);
+            });
+
+            if (productSelect.options.length === 1) {
+                productSelect.replaceChildren(
+                    new Option("No products found", "")
+                );
+            }
+        } catch (error) {
+            productSelect.replaceChildren(
+                new Option("Unable to load products", "")
+            );
+
+            showMessage(
+                error.message ||
+                "Could not load products. Check the Spring Boot console.",
+                true
+            );
+        }
+    }
+
+    async function loadRequests() {
+        requestRows.replaceChildren();
+
+        try {
+            const response = await fetch("/api/reorders");
+            const data = await readResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message || "Requests API error: " + response.status
+                );
+            }
+
+            if (!Array.isArray(data) || data.length === 0) {
+                const row = requestRows.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 6;
+                cell.textContent = "No reorder requests yet.";
+                return;
+            }
+
+            data.slice().reverse().forEach(request => {
+                const row = requestRows.insertRow();
+
+                const values = [
+                    request.id,
+                    request.productName,
+                    request.requestedQuantity,
+                    request.requestedAt
+                        ? new Date(request.requestedAt).toLocaleString()
+                        : "—",
+                    request.status
+                ];
+
+                values.forEach((value, index) => {
+                    const cell = row.insertCell();
+                    cell.textContent = value ?? "—";
+
+                    if (index === 4) {
+                        const status = String(request.status || "")
+                            .toUpperCase();
+
+                        if (status === "RECEIVED") {
+                            cell.className = "received";
+                        } else if (status === "PENDING") {
+                            cell.className = "pending";
+                        } else {
+                            cell.className = "completed";
+                        }
+                    }
+                });
+
+                const actionCell = row.insertCell();
+                const status = String(request.status || "").toUpperCase();
+
+                if (status === "PENDING") {
+                    const button = document.createElement("button");
+                    button.textContent = "Receive Stock";
+                    button.className = "receive";
+
+                    button.addEventListener("click", () => {
+                        receiveRequest(request.id, button);
+                    });
+
+                    actionCell.appendChild(button);
+                } else {
+                    actionCell.textContent = "Completed";
+                    actionCell.className = "completed";
+                }
+            });
+        } catch (error) {
+            const row = requestRows.insertRow();
+            const cell = row.insertCell();
+
+            cell.colSpan = 6;
+            cell.textContent =
+                "Unable to load requests. Check the Spring Boot console.";
+
+            showMessage(
+                error.message || "Could not load reorder requests.",
+                true
+            );
+        }
+    }
+
+    reorderForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const productId = Number(productSelect.value);
+        const quantity = Number(quantityInput.value);
+
+        if (!productId ||
+            !Number.isInteger(quantity) ||
+            quantity <= 0) {
+            showMessage(
+                "Select a product and enter a positive whole number.",
+                true
+            );
+            return;
+        }
+
+        createButton.disabled = true;
+
+        try {
+            const response = await fetch("/api/reorders", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    productId: productId,
+                    requestedQuantity: quantity
+                })
+            });
+
+            const data = await readResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ||
+                    data.error ||
+                    `Request failed: HTTP ${response.status}`
+                );
+            }
+
+            showMessage("Reorder request created successfully.");
+            quantityInput.value = "20";
+
+            await loadRequests();
+        } catch (error) {
+            showMessage(
+                error.message || "Could not create reorder request.",
+                true
+            );
+        } finally {
+            createButton.disabled = false;
+        }
+    });
+
+    async function receiveRequest(id, button) {
+        if (!confirm("Confirm that this stock has arrived?")) {
+            return;
+        }
+
+        button.disabled = true;
+
+        try {
+            const response = await fetch(
+                `/api/reorders/${encodeURIComponent(id)}/receive`,
+                {
+                    method: "PUT"
+                }
+            );
+
+            const data = await readResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ||
+                    data.error ||
+                    "Could not receive stock. HTTP " + response.status
+                );
+            }
+
+            showMessage(
+                `${data.productName}: received ${data.receivedQuantity} units. ` +
+                `New stock: ${data.newStock} units.`
+            );
+
+            await loadRequests();
+            await loadProducts();
+        } catch (error) {
+            showMessage(
+                error.message || "Could not receive stock.",
+                true
+            );
+
+            button.disabled = false;
+        }
+    }
+
+    refreshButton.addEventListener("click", async () => {
+        refreshButton.disabled = true;
+
+        try {
+            await loadProducts();
+            await loadRequests();
+        } finally {
+            refreshButton.disabled = false;
+        }
+    });
+
+    loadProducts();
+    loadRequests();
+</script>
+</body>
+</html>

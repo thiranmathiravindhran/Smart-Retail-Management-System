@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Retail - Reports</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3edff;
+            color: #30264a;
+        }
+        header {
+            background: #8064b9;
+            color: white;
+            padding: 22px;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 18px;
+            padding: 15px;
+            background: white;
+        }
+        nav a {
+            color: #6545a0;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        main {
+            max-width: 1000px;
+            margin: 28px auto;
+            padding: 0 18px;
+        }
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 14px #35235b12;
+        }
+        button {
+            background: #8064b9;
+            color: white;
+            border: 0;
+            border-radius: 8px;
+            padding: 11px 18px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e8e0f5;
+        }
+        th { background: #eee6ff; }
+        .status { color: #7653aa; }
+        #message { margin-top: 12px; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Smart Retail Management System</h1>
+    <p>Reports</p>
+</header>
+
+<nav>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/products.html">Products</a>
+    <a href="/sales.html">Sales</a>
+    <a href="/forecast.html">Demand Forecast</a>
+    <a href="/inventory.html">Inventory</a>
+    <a href="/reports.html">Reports</a>
+    <a href="/reorders.html">Reorder System</a>
+</nav>
+
+<main>
+    <section class="card">
+        <h2>Sales Report</h2>
+        <p>View sales records saved in the system.</p>
+        <button onclick="loadReports()">Refresh Report</button>
+        <p id="message">Click Refresh Report to load the data.</p>
+        <div style="overflow-x:auto">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sale ID</th>
+                        <th>Product ID</th>
+                        <th>Quantity Sold</th>
+                        <th>Sale Date</th>
+                        <th>Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="reportRows">
+                    <tr><td colspan="5">No data loaded yet.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<script>
+async function loadReports() {
+    const message = document.getElementById("message");
+    const rows = document.getElementById("reportRows");
+
+    message.textContent = "Loading report...";
+    rows.innerHTML = "";
+
+    try {
+        const response = await fetch("/api/sales");
+
+        if (!response.ok) {
+            throw new Error("Sales API returned HTTP " + response.status);
+        }
+
+        const sales = await response.json();
+
+        if (!Array.isArray(sales) || sales.length === 0) {
+            rows.innerHTML =
+                '<tr><td colspan="5">No sales records available.</td></tr>';
+            message.textContent = "Report loaded successfully.";
+            return;
+        }
+
+        sales.forEach(sale => {
+            const productId = sale.productId ?? sale.product_id
+                ?? sale.product?.id ?? "-";
+            const quantity = sale.quantitySold ?? sale.quantity_sold
+                ?? sale.quantity ?? "-";
+            const date = sale.saleDate ?? sale.sale_date ?? "-";
+            const amount = sale.totalAmount ?? sale.total_amount ?? "-";
+
+            const tr = document.createElement("tr");
+            [sale.id ?? "-", productId, quantity, date, amount]
+                .forEach(value => {
+                    const td = document.createElement("td");
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+            rows.appendChild(tr);
+        });
+
+        message.textContent = "Report loaded successfully.";
+    } catch (error) {
+        rows.innerHTML =
+            '<tr><td colspan="5">Unable to load report.</td></tr>';
+        message.textContent =
+            "Error: " + error.message +
+            ". Check whether the Sales API is available.";
+    }
+}
+</script>
+</body>
+</html>

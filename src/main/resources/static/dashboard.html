@@ -1,0 +1,694 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Retail | Dashboard</title>
+
+<style>
+:root {
+    --purple: #7560b5;
+    --dark-purple: #493779;
+    --lavender: #f0eaff;
+    --light-lavender: #e7defb;
+    --white: #ffffff;
+    --text: #302b3d;
+    --muted: #817b90;
+    --green: #32966b;
+    --red: #d95369;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--lavender);
+    color: var(--text);
+}
+
+.layout { min-height: 100vh; }
+
+.sidebar {
+    width: 245px;
+    position: fixed;
+    inset: 0 auto 0 0;
+    background: var(--white);
+    padding: 26px 16px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e7e0f3;
+    z-index: 10;
+    overflow-y: auto;
+}
+
+.brand {
+    padding: 4px 12px 26px;
+    color: var(--dark-purple);
+    font-size: 21px;
+    font-weight: bold;
+    line-height: 1.5;
+}
+
+.brand small {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.menu-title {
+    margin: 8px 12px;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.3px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+    margin: 3px 0;
+    text-decoration: none;
+    color: #686176;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 9px;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: var(--light-lavender);
+    color: var(--dark-purple);
+}
+
+.nav-icon {
+    width: 22px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 25px;
+}
+
+.main {
+    margin-left: 245px;
+    padding: 28px;
+    min-width: 0;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+
+.topbar h1 {
+    font-size: 27px;
+    margin: 0 0 8px;
+    color: var(--dark-purple);
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0;
+}
+
+.admin {
+    background: var(--white);
+    padding: 11px 16px;
+    border-radius: 12px;
+    color: var(--dark-purple);
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.section-title {
+    font-size: 19px;
+    margin: 27px 0 16px;
+    color: var(--dark-purple);
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.card {
+    background: var(--white);
+    border-radius: 15px;
+    padding: 21px;
+    box-shadow: 0 4px 16px rgba(77, 54, 119, 0.06);
+    min-width: 0;
+}
+
+.card-label {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 14px;
+}
+
+.card-value {
+    color: var(--dark-purple);
+    font-size: 29px;
+    font-weight: bold;
+    margin: 0 0 9px;
+    overflow-wrap: anywhere;
+}
+
+.card-note {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.card-icon {
+    float: right;
+    background: var(--lavender);
+    border-radius: 10px;
+    padding: 9px;
+    font-size: 19px;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr);
+    gap: 18px;
+}
+
+.panel {
+    background: var(--white);
+    padding: 22px;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(77, 54, 119, 0.06);
+    min-width: 0;
+}
+
+.panel h3 {
+    margin: 0 0 7px;
+    color: var(--dark-purple);
+    font-size: 17px;
+}
+
+.panel-description {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 20px;
+}
+
+.stock-row {
+    display: grid;
+    grid-template-columns: minmax(70px, 1fr) 2fr 35px;
+    gap: 10px;
+    align-items: center;
+    margin: 18px 0;
+    font-size: 12px;
+}
+
+.stock-name {
+    overflow-wrap: anywhere;
+}
+
+.bar-track {
+    height: 9px;
+    background: #eee8fa;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    background: var(--purple);
+    border-radius: 20px;
+}
+
+.status {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 6px 9px;
+    border-radius: 20px;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.low {
+    color: #b52f4c;
+    background: #ffe7ec;
+}
+
+.available {
+    color: #21744e;
+    background: #e1f7e9;
+}
+
+.table-wrap { overflow-x: auto; }
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+}
+
+th, td {
+    padding: 13px 10px;
+    text-align: left;
+    border-bottom: 1px solid #eee8f5;
+}
+
+th {
+    color: var(--muted);
+    background: #faf8ff;
+    font-size: 12px;
+}
+
+td { overflow-wrap: anywhere; }
+
+.actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+.action-link {
+    text-decoration: none;
+    padding: 12px 15px;
+    background: var(--purple);
+    color: white;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.action-link.secondary {
+    color: var(--dark-purple);
+    background: var(--light-lavender);
+}
+
+.message {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.footer {
+    color: var(--muted);
+    text-align: center;
+    padding: 28px 0 8px;
+    font-size: 12px;
+}
+
+.menu-toggle {
+    display: none;
+    border: 0;
+    background: var(--purple);
+    color: white;
+    padding: 10px 13px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+@media (max-width: 1050px) {
+    .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .content-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform .2s ease;
+        box-shadow: 4px 0 20px #d8cfea;
+    }
+
+    .sidebar.open { transform: translateX(0); }
+
+    .main {
+        margin-left: 0;
+        padding: 18px;
+    }
+
+    .menu-toggle { display: inline-block; }
+    .topbar h1 { font-size: 23px; }
+    .cards { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card { padding: 15px; }
+    .card-value { font-size: 23px; }
+}
+
+@media (max-width: 390px) {
+    .cards { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+
+<body>
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+    <div class="brand">
+        Smart Retail
+        <small>Management System</small>
+    </div>
+
+    <div class="menu-title">Main Menu</div>
+
+    <a class="nav-link active" href="dashboard.html">
+        <span class="nav-icon">▦</span> Dashboard
+    </a>
+    <a class="nav-link" href="products.html">
+        <span class="nav-icon">▤</span> Products
+    </a>
+    <a class="nav-link" href="sales.html">
+        <span class="nav-icon">▥</span> Sales
+    </a>
+    <a class="nav-link" href="forecast.html">
+        <span class="nav-icon">↗</span> Forecast
+    </a>
+    <a class="nav-link" href="inventory.html">
+        <span class="nav-icon">▣</span> Inventory
+    </a>
+    
+<a class="nav-link" href="/reorders.html">
+    <span class="nav-icon">⟳</span> Reorders
+</a>
+
+    <a class="nav-link" href="reports.html">
+        <span class="nav-icon">▥</span> Reports
+    </a>
+
+    <div class="sidebar-bottom">
+        <div class="menu-title">Preferences</div>
+        <a class="nav-link" href="settings.html">
+            <span class="nav-icon">⚙</span> Settings
+        </a>
+        <a class="nav-link" href="login.html">
+            <span class="nav-icon">⇥</span> Login / Logout
+        </a>
+    </div>
+</aside>
+
+<main class="main">
+    <div class="topbar">
+        <div>
+            <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+            <h1 style="margin-top:12px">Dashboard</h1>
+            <p class="subtitle">Demand Forecasting & Inventory Optimization</p>
+        </div>
+        
+
+
+<div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; padding:10px 20px; font-weight:600; flex-wrap:wrap;">
+    <span>👤</span>
+    <span id="userDisplay">Public User</span>
+    <button type="button" onclick="changeUserName()"
+        style="border:0; background:#e7defb; color:#493779; padding:8px 12px; border-radius:8px; cursor:pointer;">
+        Change Name
+    </button>
+</div>
+
+
+
+    <h2 class="section-title"
+    id="overviewLink"
+    onclick="scrollToOverview()"
+    style="cursor: pointer;"
+    title="Click to view dashboard summary">
+    Overview
+</h2>
+
+    <div class="cards">
+        <div class="card">
+            <span class="card-icon">▤</span>
+            <p class="card-label">Total Products</p>
+            <p class="card-value" id="totalProducts">—</p>
+            <div class="card-note">Products in your database</div>
+        </div>
+
+        <div class="card">
+            <span class="card-icon">▣</span>
+            <p class="card-label">Current Stock</p>
+            <p class="card-value" id="totalStock">—</p>
+            <div class="card-note">Units across all products</div>
+        </div>
+
+        <div class="card">
+            <span class="card-icon">₹</span>
+            <p class="card-label">Sales Revenue</p>
+            <p class="card-value" id="totalRevenue">—</p>
+            <div class="card-note" id="salesCount">Loading sales...</div>
+        </div>
+
+        <div class="card">
+            <span class="card-icon">↗</span>
+            <p class="card-label">Predicted Demand</p>
+            <p class="card-value" id="predictedDemand">—</p>
+            <div class="card-note">Connect a forecasting model to calculate</div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <section>
+            <h2 class="section-title">Stock Analysis</h2>
+            <div class="panel">
+                <h3>Product Stock Levels</h3>
+                <p class="panel-description">Current quantities from your products database</p>
+                <div id="stockChart" class="message">Loading stock data...</div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="section-title">Recent Sales</h2>
+            <div class="panel">
+                <h3>Latest Transactions</h3>
+                <p class="panel-description">Most recent sales records</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentSales">
+                            <tr><td colspan="3">Loading sales...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <h2 class="section-title">Inventory Overview</h2>
+    <div class="panel">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Current Stock</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryTable">
+                    <tr><td colspan="4">Loading inventory...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="actions">
+            <a class="action-link" href="products.html">＋ Add Product</a>
+            <a class="action-link secondary" href="sales.html">＋ Add Sales Data</a>
+            <a class="action-link secondary" href="reports.html">View Reports →</a>
+        </div>
+    </div>
+
+    <div id="apiMessage" class="message" role="status"></div>
+    <div class="footer">Smart Retail Management System · Dashboard</div>
+</main>
+</div>
+
+<script>
+function displayUserName() {
+    const savedName = localStorage.getItem("smartRetailUserName");
+    document.getElementById("userDisplay").textContent =
+        savedName || "Public User";
+}
+function scrollToOverview() {
+    document.getElementById("summaryCards").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
+
+function changeUserName() {
+    const name = prompt("Enter your name:");
+
+    if (name !== null && name.trim() !== "") {
+        localStorage.setItem("smartRetailUserName", name.trim());
+        displayUserName();
+    }
+}
+function toggleMenu() {
+    document.getElementById("sidebar").classList.toggle("open");
+}
+
+function money(value) {
+    return "₹" + Number(value || 0).toLocaleString("en-IN", {
+        maximumFractionDigits: 2
+    });
+}
+
+function showCell(row, value) {
+    const cell = document.createElement("td");
+    cell.textContent = value ?? "";
+    row.appendChild(cell);
+}
+
+async function loadDashboard() {
+    const problems = [];
+
+    let products = [];
+    let sales = [];
+
+    try {
+        const response = await fetch("/api/products");
+        if (!response.ok) throw new Error("Products API returned an error");
+        products = await response.json();
+
+        document.getElementById("totalProducts").textContent = products.length;
+
+        const stockTotal = products.reduce(
+            (sum, product) => sum + Number(product.stockQuantity || 0), 0
+        );
+        document.getElementById("totalStock").textContent =
+            stockTotal.toLocaleString("en-IN");
+
+        const inventoryTable = document.getElementById("inventoryTable");
+        inventoryTable.innerHTML = "";
+
+        if (products.length === 0) {
+            inventoryTable.innerHTML =
+                '<tr><td colspan="4">No products available.</td></tr>';
+        }
+
+        products.forEach(product => {
+            const row = document.createElement("tr");
+            showCell(row, product.productName);
+            showCell(row, product.category);
+            showCell(row, product.stockQuantity);
+
+            const statusCell = document.createElement("td");
+            const status = document.createElement("span");
+            const lowStock = Number(product.stockQuantity || 0) <= 10;
+            status.className = "status " + (lowStock ? "low" : "available");
+            status.textContent = lowStock ? "Low Stock" : "Available";
+            statusCell.appendChild(status);
+            row.appendChild(statusCell);
+            inventoryTable.appendChild(row);
+        });
+
+        const chart = document.getElementById("stockChart");
+        chart.innerHTML = "";
+
+        if (products.length === 0) {
+            chart.textContent = "Add products to view stock analysis.";
+        } else {
+            const maxStock = Math.max(
+                1, ...products.map(p => Number(p.stockQuantity || 0))
+            );
+
+            products.slice(0, 10).forEach(product => {
+                const row = document.createElement("div");
+                row.className = "stock-row";
+
+                const name = document.createElement("span");
+                name.className = "stock-name";
+                name.textContent = product.productName;
+
+                const track = document.createElement("div");
+                track.className = "bar-track";
+
+                const bar = document.createElement("div");
+                bar.className = "bar";
+                bar.style.width =
+                    (Number(product.stockQuantity || 0) / maxStock * 100) + "%";
+                track.appendChild(bar);
+
+                const value = document.createElement("span");
+                value.textContent = product.stockQuantity ?? 0;
+
+                row.append(name, track, value);
+                chart.appendChild(row);
+            });
+
+            if (products.length > 10) {
+                const note = document.createElement("p");
+                note.className = "message";
+                note.textContent = "Showing first 10 products.";
+                chart.appendChild(note);
+            }
+        }
+    } catch (error) {
+        problems.push("Products could not be loaded.");
+        document.getElementById("totalProducts").textContent = "Error";
+        document.getElementById("totalStock").textContent = "Error";
+        document.getElementById("inventoryTable").innerHTML =
+            '<tr><td colspan="4">Could not load products. Check Spring Boot.</td></tr>';
+        document.getElementById("stockChart").textContent =
+            "Could not load stock analysis.";
+    }
+
+    try {
+        const response = await fetch("/api/sales");
+        if (!response.ok) throw new Error("Sales API returned an error");
+        sales = await response.json();
+
+        const revenue = sales.reduce(
+            (sum, sale) => sum + Number(sale.totalAmount || 0), 0
+        );
+        document.getElementById("totalRevenue").textContent = money(revenue);
+        document.getElementById("salesCount").textContent =
+            sales.length + " sales records";
+
+        const recent = document.getElementById("recentSales");
+        recent.innerHTML = "";
+
+        if (sales.length === 0) {
+            recent.innerHTML =
+                '<tr><td colspan="3">No sales records yet.</td></tr>';
+        } else {
+            sales.slice(-5).reverse().forEach(sale => {
+                const row = document.createElement("tr");
+                showCell(row, sale.product?.productName || "Product");
+                showCell(row, sale.quantitySold);
+                showCell(row, money(sale.totalAmount));
+                recent.appendChild(row);
+            });
+        }
+    } catch (error) {
+        problems.push("Sales could not be loaded.");
+        document.getElementById("totalRevenue").textContent = "Error";
+        document.getElementById("salesCount").textContent =
+            "Sales API unavailable";
+        document.getElementById("recentSales").innerHTML =
+            '<tr><td colspan="3">Could not load sales.</td></tr>';
+    }
+
+    document.getElementById("apiMessage").textContent = problems.join(" ");
+}
+
+displayUserName();
+loadDashboard();
+</script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Data - Smart Retail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0eaff;
+            color: #333;
+            padding: 25px;
+        }
+        .container { max-width: 1000px; margin: auto; }
+        .card {
+            background: white;
+            padding: 22px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #d8d0e8;
+        }
+        h1, h2 { color: #6550a5; }
+        input, select {
+            padding: 11px;
+            margin: 6px 0;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        button {
+            background: #7560b5;
+            color: white;
+            border: 0;
+            padding: 11px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #e5ddfb; color: #493779; }
+        .table-wrap { overflow-x: auto; }
+        #message { margin-top: 12px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Smart Retail Management System</h1>
+
+    <div class="card">
+        <h2>Sales Data</h2>
+        <form id="salesForm">
+            <label>Product Name</label>
+            <select id="productId" required>
+                <option value="">Loading products...</option>
+            </select>
+
+            <label>Sales Date</label>
+            <input type="date" id="saleDate" required>
+
+            <label>Quantity Sold</label>
+            <input type="number" id="quantitySold" min="1" required>
+
+            <label>Price Per Unit (₹)</label>
+            <input type="number" id="pricePerUnit" min="0" step="0.01" required>
+
+            <button type="submit">Add Sales Data</button>
+        </form>
+        <p id="message" role="status"></p>
+    </div>
+
+    <div class="card">
+        <h2>Sales History</h2>
+        <button type="button" onclick="loadSales()">Refresh Sales</button>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product</th>
+                        <th>Date</th>
+                        <th>Quantity Sold</th>
+                        <th>Total Amount (₹)</th>
+                    </tr>
+                </thead>
+                <tbody id="salesTable">
+                    <tr><td colspan="5">Loading sales...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+const PRODUCTS_API = "/api/products";
+const SALES_API = "/api/sales";
+
+async function loadProducts() {
+    const select = document.getElementById("productId");
+
+    try {
+        const response = await fetch(PRODUCTS_API);
+        if (!response.ok) throw new Error("Products unavailable");
+
+        const products = await response.json();
+        select.innerHTML = '<option value="">Select Product</option>';
+
+        products.forEach(product => {
+            const option = document.createElement("option");
+            option.value = product.id;
+            option.textContent = product.productName;
+            option.dataset.price = product.price;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        select.innerHTML = '<option value="">Could not load products</option>';
+    }
+}
+
+document.getElementById("productId").addEventListener("change", function() {
+    const selected = this.options[this.selectedIndex];
+    if (selected.dataset.price) {
+        document.getElementById("pricePerUnit").value = selected.dataset.price;
+    }
+});
+
+async function loadSales() {
+    const table = document.getElementById("salesTable");
+
+    try {
+        const response = await fetch(SALES_API);
+        if (!response.ok) throw new Error("Sales API unavailable");
+
+        const sales = await response.json();
+        table.innerHTML = "";
+
+        if (sales.length === 0) {
+            table.innerHTML = '<tr><td colspan="5">No sales records found.</td></tr>';
+            return;
+        }
+
+        sales.forEach(sale => {
+            const row = document.createElement("tr");
+            const values = [
+                sale.id,
+                sale.productName ?? sale.product?.productName ?? sale.productId ?? "",
+                sale.saleDate ?? "",
+                sale.quantitySold ?? "",
+                Number(sale.totalAmount ?? 0).toFixed(2)
+            ];
+
+            values.forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+
+            table.appendChild(row);
+        });
+    } catch (error) {
+        table.innerHTML =
+            '<tr><td colspan="5">Sales API is not available yet.</td></tr>';
+    }
+}
+
+document.getElementById("salesForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const productId = Number(document.getElementById("productId").value);
+    const quantitySold = Number(document.getElementById("quantitySold").value);
+    const pricePerUnit = Number(document.getElementById("pricePerUnit").value);
+    const saleDate = document.getElementById("saleDate").value;
+    const message = document.getElementById("message");
+
+    if (!productId || !saleDate || quantitySold < 1 || pricePerUnit < 0) {
+        message.textContent = "Please enter valid sales details.";
+        return;
+    }
+
+    const sale = {
+        productId,
+        quantitySold,
+        saleDate,
+        totalAmount: quantitySold * pricePerUnit
+    };
+
+    try {
+        const response = await fetch(SALES_API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(sale)
+        });
+
+        if (!response.ok) {
+            throw new Error("Save failed");
+        }
+
+        message.textContent = "Sales data saved successfully!";
+        this.reset();
+        await loadProducts();
+        await loadSales();
+    } catch (error) {
+        message.textContent =
+            "Sales could not be saved. The Spring Boot Sales API may need to be configured.";
+    }
+});
+
+document.getElementById("saleDate").value =
+    new Date().toLocaleDateString("en-CA");
+
+loadProducts();
+loadSales();
+</script>
+</body>
+</html>
