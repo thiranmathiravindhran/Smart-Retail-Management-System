@@ -19,21 +19,24 @@ public class AuthController {
         this.userAccountService = userAccountService;
     }
 
+    // Open login page
     @GetMapping("/")
     public String home() {
-        return "redirect:/login";
+        return "redirect:/login.html";
     }
 
     @GetMapping("/login")
     public String login() {
-        return "login";
+        return "redirect:/login.html";
     }
 
+    // Open registration page
     @GetMapping("/register")
     public String registerPage() {
-        return "register";
+        return "redirect:/register.html";
     }
 
+    // Register new user
     @PostMapping("/register")
     public String registerUser(
             @RequestParam String fullName,
@@ -41,31 +44,38 @@ public class AuthController {
             @RequestParam String email,
             @RequestParam String password,
             @RequestParam String confirmPassword,
-            Model model,
             RedirectAttributes redirectAttributes) {
 
         if (!password.equals(confirmPassword)) {
-            model.addAttribute("error", "Passwords do not match.");
-            return "register";
+            redirectAttributes.addFlashAttribute(
+                    "error", "Passwords do not match.");
+            return "redirect:/register.html";
         }
 
         try {
             userAccountService.register(
-                    fullName, username, email, password);
+                    fullName,
+                    username,
+                    email,
+                    password);
 
             redirectAttributes.addFlashAttribute(
-                    "success", "Registration successful. Please sign in.");
+                    "success",
+                    "Registration successful. Please sign in.");
 
-            return "redirect:/login";
+            return "redirect:/login.html";
 
         } catch (IllegalArgumentException ex) {
-            model.addAttribute("error", ex.getMessage());
-            return "register";
+            redirectAttributes.addFlashAttribute(
+                    "error", ex.getMessage());
+
+            return "redirect:/register.html";
         }
     }
 
+    // Logout page
     @GetMapping("/logout")
     public String logoutPage() {
-        return "logout";
+        return "redirect:/login.html?logout";
     }
 }

@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Retail - Register</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #eee8f7, #dcefe3);
+        }
+
+        .register-box {
+            width: 400px;
+            max-width: 92%;
+            padding: 35px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        h2 {
+            text-align: center;
+            color: #8064a2;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #777;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        label {
+            display: block;
+            margin: 13px 0 6px;
+            color: #444;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d5c9e5;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #8064a2;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 22px;
+            border: none;
+            border-radius: 8px;
+            background: #8064a2;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #684b8c;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 7px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .error {
+            color: #a32020;
+            background: #ffe5e5;
+        }
+
+        .success {
+            color: #176b39;
+            background: #e0f5e7;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        a {
+            color: #8064a2;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="register-box">
+
+        <h2>Smart Retail</h2>
+        <p class="subtitle">Create your new account</p>
+
+        <div id="message"></div>
+
+        <form action="/register" method="POST">
+
+            <label>Full Name</label>
+            <input type="text" name="fullName"
+                   placeholder="Enter your full name" required>
+
+            <label>Username</label>
+            <input type="text" name="username"
+                   placeholder="Choose a username" required>
+
+            <label>Email</label>
+            <input type="email" name="email"
+                   placeholder="Enter your email" required>
+
+            <label>Password</label>
+            <input type="password" name="password"
+                   placeholder="Create password" required>
+
+            <label>Confirm Password</label>
+            <input type="password" name="confirmPassword"
+                   placeholder="Confirm password" required>
+
+            <button type="submit">Create Account</button>
+
+        </form>
+
+        <p class="login-link">
+            Already have an account?
+            <a href="/login.html">Sign In</a>
+        </p>
+
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.has("error")) {
+            document.getElementById("message").innerHTML =
+                '<div class="message error">Registration failed. Please try again.</div>';
+        }
+    </script>
+
+</body>
+</html>
